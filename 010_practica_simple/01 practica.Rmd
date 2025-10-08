@@ -20,7 +20,7 @@ library(ggplot2)
 library(dplyr)
 ```
 
-# Letura de datos
+# Lectura de datos actualizados
 
 ```{r}
 data_path <- file.path("D://Estadistica4/unidad1/010_practica_simple")
