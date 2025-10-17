@@ -1,0 +1,241 @@
+---
+title: "Basic Example"
+author: "Boris Miranda"
+date: "2025-14-10"
+output: 
+  github_document: default
+  html_document: default
+knit: (function(inputFile, encoding) {
+  rmarkdown::render(inputFile, encoding = encoding, output_format = "all") })
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+# Librerias
+```{r librerias}
+library(ggplot2)
+library(dplyr)
+```
+
+# Lectura de datos
+
+```{r}
+data_path <- file.path("D://Estadistica4/unidad1/020_tarea1")
+data_file <- file.path(data_path, "vgsales.csv")
+data.vg.raw <- read.csv(data_file,
+                 stringsAsFactors = F,na.strings = ".",header = T,sep=",")
+head(data.vg.raw)
+str(data.vg.raw)
+```
+
+```{r}
+summary(data.vg.raw)
+```
+
+# Limpieza de datos
+
+
+```{r}
+data.vg <- data.vg.raw 
+data.vg$Platform <- factor(data.vg$Platform)
+data.vg$Year <- as.numeric(data.vg$Year)
+summary(data.vg)
+```
+```{r}
+str(data.vg.raw)
+unique(data.vg.raw$Year)
+head(filter(data.vg.raw, Year=="N/A"))
+
+```
+
+```{r}
+unique(data.vg$Platform)
+filter(data.vg, Name=="FIFA 15")
+hist(data.vg$NA_Sales )
+```
+
+Calculemos la proporcion de los datos missings Esto nos ayudará a decidir la estrategia (borrar vs. llenar)
+
+```{r}
+# Contar NA por columna
+na_por_columna <- colSums(is.na(data.vg))
+print("NA por columna:")
+print(na_por_columna)
+
+# Porcentaje de NA por columna
+porcentaje_na <- colMeans(is.na(data.vg)) * 100
+print("Porcentaje de NA por columna:")
+print(round(porcentaje_na, 2))
+
+```
+```{r}
+length(unique(data.vg$Publisher))
+filter(data.vg, Publisher==" ")
+
+```
+
+A año le faltan 271 valores (aprox 1,63%). Dado que este porcentaje es muy pequeño, la estrategia más segura y sencilla es eliminar estas filas. Intentar 'adivinar' (imputar) el año o la editorial podría generar interferencias y llevar a conclusiones incorrectas. Queremos que nuestro análisis se base en datos completos y precisos. Usaremos .dropna() para eliminar las filas que contienen valores NaN en las columnas especificadas.
+
+Este reporte lo veré en GITHUB
+
+```{r}
+# DataFrame de ejemplo con missing values
+
+print("DataFrame original:")
+print(head(data.vg))
+cat("Filas originales:", nrow(data.vg), "\n\n")
+
+# Método 1: na.omit() - Elimina filas con cualquier NA
+df_sin_na <- na.omit(data.vg)
+print("Con na.omit():")
+print(head(df_sin_na))
+cat("Filas después de na.omit():", nrow(df_sin_na), "\n\n")
+
+# Método 2: complete.cases() - Más control
+df_completo <- data.vg[complete.cases(data.vg), ]
+print("Con complete.cases():")
+print(head(df_completo))
+cat("Filas después de complete.cases():", nrow(df_completo), "\n")
+
+```
+
+```{r}
+data.vg  <- data.vg[complete.cases(data.vg), ]
+dim(data.vg)
+```
+# Tarea
+#Tomando en cuenta los datos de video juegos y como población de interés aquellos que tengan ventas globales menores a 2 millones, analizar una nueva variable denominada Peso_NA que debe contener información de la importancia o el peso de las ventas de Estados Unidos relativo a las ventas Globales, con los siguientes puntos:
+#1.Elaborar 2 muestras aleatorias de tamaño 500, extraer sus estadísticas básicas y graficar sus distribuciones.
+#2.Comparar los resultados del punto anterior con la población de interés.
+#3.Presentar conclusiones y observaciones
+
+#Utilizando la base limpia de data.vg se procedió a filtrar las ventas globales menores a 2 millones y se asignó el nombre "data.vg.menor2"
+
+
+```{r}
+data.vg.menor2 <- filter(data.vg, Global_Sales<2)
+summary(data.vg.menor2$Global_Sales)
+hist(data.vg.menor2$Global_Sales)
+```
+#Comparamos el tamaño de la población total (data.vg) y la población con ventas menores a 2 millones
+```{r}
+dim(data.vg)
+dim(data.vg.menor2)
+```
+#Añadimos la varialble Peso_NA = EU_Sales/Global_Sales a data.vg.menor2
+
+```{r}
+data.vg.menor2 <- data.vg.menor2 %>%
+  mutate(Peso_NA = EU_Sales / Global_Sales)
+head(data.vg.menor2)
+
+```
+
+```{r}
+data.vg.menor2 <- data.vg.menor2 %>%
+  mutate(Peso_NA = EU_Sales / Global_Sales)
+head(data.vg.menor2)
+
+```
+
+```{r}
+ggplot(data = data.vg.menor2, aes(x = Peso_NA)) +
+  geom_histogram(
+    binwidth = 0.1,             # Define el ancho de cada barra (0.5 unidades de Global_Sales)
+    fill = "skyblue",           # Color de relleno de las barras
+    color = "black"             # Color del contorno de las barras
+  ) +
+  labs(
+    title = "Distribución de Peso_NA",
+    x = "Peso_NA (porcentaje de ventas de EU relación a Ventas GLobales)",
+    y = "Frecuencia (Conteo)"
+  ) +
+  theme_minimal() # Tema de gráfico limpio 
+
+```
+
+```{r}
+summary(data.vg.menor2$Peso_NA)
+```
+
+#Generamos la primera muestra aleatoria con 200 elementos denominada "data.muestra1"
+```{r}
+set.seed(365)
+N <- dim(data.vg.menor2)[1]
+indices_muestra1 <- sample(1:N,200,replace = TRUE)
+data.muestra1<-data.vg.menor2[indices_muestra1, ]
+summary(data.muestra1$Peso_NA)
+dim(data.muestra1)
+```
+#Generamos la segunda muestra aleatoria con 200 elementos denominada "data.muestra2"
+```{r}
+set.seed(458)
+N <- dim(data.vg.menor2)[1]
+indices_muestra2 <- sample(1:N,200,replace = TRUE)
+data.muestra2<-data.vg.menor2[indices_muestra2, ]
+summary(data.muestra2$Peso_NA)
+dim(data.muestra2)
+```
+#Generamos sus correspondientes histogramas, de acuerdo a la nueva variable Peso_NA
+```{r}
+hist(data.muestra1$Peso_NA)
+hist(data.muestra2$Peso_NA)
+
+```
+#Creamos un histograma superpuesto de ambas series
+```{r}
+# 1. Crear la columna de origen para cada data frame
+data.muestra1_prep <- data.muestra1 %>%
+  select(Peso_NA) %>%
+  mutate(Source = "data.muestra1")
+
+data.muestra2_prep <- data.muestra2 %>%
+  select(Peso_NA) %>%
+  mutate(Source = "data.muestra2")
+
+# 2. Combinar los data frames en uno solo ('long format')
+data_combined <- bind_rows(data.muestra1_prep, data.muestra2_prep)
+
+
+# Crear el histograma superpuesto
+ggplot(data_combined, aes(x = Peso_NA, fill = Source)) +
+  geom_histogram(
+    aes(y = after_stat(density)), # Usa densidad para una comparación justa
+    bins = 10,                     # Número de 'bins' (barras)
+    alpha = 0.2,                   # Transparencia para ver la superposición
+    position = "identity",         # Permite la superposición
+    color = "black"                # Contorno de las barras
+  ) +
+  labs(
+    title = "Distribución de la Frecuencia Relativa (data.muestra1 vs data.muestra2)",
+    x = "Peso_NA",
+    y = "Densidad",
+    fill = "Data Frame"
+  ) +
+  theme_minimal() + # Un tema limpio para la visualización
+  scale_fill_manual(values = c("data.muestra1" = "green", "data.muestra2" = "orange")) # Colores personalizados
+
+
+```
+El tamaño de la población sin limpieza es de 16598 elementos, mientras que el tamaño de la población recortada es de 16327.
+La población recortada con ventas globales menores a $us2MM alcanza a 15486.
+Sobre esta población recortada se generaron dos muestras y para que las mismas sean comparables, se utilizó la variable genera Peso_NA.
+Para poder analizar los tres conjuntos de información, se generó el resumen estadístico descriptivo (summary) de la población y las dos muestras.
+Debido a que la variable Peso_NA es el cociente entre las ventas en EU y las ventas globales, lo que se genera es una variable que describe el porcentaje de participación de las ventas de EU sobre las ventas globales. Como es de espera en este tipo de variables, el valor mínimo puede ser cero y el valor máximo a lo sumo será 1, lo cual efectivamente ocurre en la población y las dos muestras.
+En los tres conjuntos el primer cuartil es cero, mientras que la mediana para la población está alrededor de 0.18, para la muestra 1 es de 0.11 y para la muestra 2 es de 0.18.
+Por otra parte, la media poblacional es de 0.2261 mientras que en las muestras alcanza a 0.2169 y 0.2232, lo cual indica una aproximación significativa. 
+El tercer cuartil se sitúa alrededor de 0.37, 0.38 y 0.37 para la población y las dos muestras respectivamente.
+Finalmente, las distribuciones de la población y las dos muestras, reflejadas en sus correspondientes histogramas dan cuenta que no fluctúan significativamente, a no ser por la frecuencia máxima en la población, lo cual es de esperarse por el número de elementos (15486) contra los 200 de ambas muestras.
+
+
+
+
+
+
+
+
+
+
+
+
