@@ -1,7 +1,7 @@
 ---
 title: "Basic Example"
 author: "Boris Miranda"
-date: "2025-10-08"
+date: "2025-10-01"
 output: 
   github_document: default
   html_document: default
@@ -14,13 +14,11 @@ editor_options:
 
 # Librerias
 ```{r librerias}
-library(mrgsolve)
 library(ggplot2)
-
 library(dplyr)
 ```
 
-# Lectura de datos actualizados
+# Letura de datos
 
 ```{r}
 data_path <- file.path("D://Estadistica4/unidad1/010_practica_simple")
@@ -74,15 +72,15 @@ print(round(porcentaje_na, 2))
 ```
 
 
-
 ```{r}
-unique(data.vg$Publisher)
+length(unique(data.vg$Publisher))
 filter(data.vg, Publisher==" ")
 
 ```
 
 A año le faltan 271 valores (aprox 1,63%). Dado que este porcentajee es muy pequeño, la estrategia más segura y sencilla es eliminar estas filas. Intentar 'adivinar' (imputar) el año o la editorial podría generar interferencias y llevar a conclusiones incorrectas. Queremos que nuestro análisis se base en datos completos y precisos. Usaremos .dropna() para eliminar las filas que contienen valores NaN en las columnas especificadas.
 
+Este reporte lo veré en GITHUB
 
 
 ```{r}
@@ -106,6 +104,11 @@ cat("Filas después de complete.cases():", nrow(df_completo), "\n")
 
 ```
 
+```{r}
+data.vg  <- data.vg[complete.cases(data.vg), ]
+dim(data.vg)
+```
+
 
 # Tendencia Central
 
@@ -115,23 +118,19 @@ hist(data.vg$Global_Sales)
 ```
 ```{r}
 hist(filter(data.vg,Global_Sales < 5)$Global_Sales)
-
-
 ```
-
 ```{r}
 set.seed(13)
 N <- dim(data.vg)[1]
 indices_muestra <- sample(1:N,200,replace = TRUE)
-data.muestra <- data.vg[indices_muestra, ]
+data.muestra<-data.vg[indices_muestra, ]
 summary(data.muestra$Global_Sales)
 
 ```
 
 
 
-
-#Graficos
+Graficos
 
 
 ```{r}
@@ -146,6 +145,17 @@ ggplot( df , aes(x = NA_Sales)) +
   theme_minimal()
 
 ```
+Población:
 
+```{r}
+summary(df)
+```
+Muestreo:
 
+```{r}
+set.seed(123)
+indices_muestra <- sample(1:5,2,replace = FALSE)
+df[indices_muestra,]
+
+```
 
